@@ -1,19 +1,28 @@
-import sqlite3
+import psycopg2
 
-DATABASE_NAME = "interview.db"
+from config import (
+    PGHOST,
+    PGPORT,
+    PGDATABASE,
+    PGUSER,
+    PGPASSWORD
+)
 
 def get_connection():
-    """
-    Create a connection to SQLite database.
-    """
-    conn = sqlite3.connect(DATABASE_NAME)
+
+    conn = psycopg2.connect(
+        host=PGHOST,
+        port=PGPORT,
+        dbname=PGDATABASE,
+        user=PGUSER,
+        password=PGPASSWORD,
+        sslmode="require"
+    )
+
     return conn
 
 
 def create_database():
-    """
-    Create all database tables if they do not exist.
-    """
 
     conn = get_connection()
     cursor = conn.cursor()
@@ -25,19 +34,19 @@ def create_database():
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS candidate (
 
-            candidate_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            candidate_id SERIAL PRIMARY KEY,
 
-            name TEXT,
+            name VARCHAR(255),
 
-            university TEXT,
+            university VARCHAR(255),
 
-            study_level TEXT,
+            study_level VARCHAR(100),
 
-            course TEXT,
+            course VARCHAR(255),
 
-            employment_status TEXT,
+            employment_status VARCHAR(100),
 
-            target_position TEXT,
+            target_position VARCHAR(255),
 
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 
@@ -51,18 +60,19 @@ def create_database():
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS interview (
 
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
 
-            candidate_id INTEGER,
+            candidate_id INT,
 
-            question_number INTEGER,
+            question_number INT,
 
             question TEXT,
 
             answer TEXT,
 
-            FOREIGN KEY(candidate_id)
+            FOREIGN KEY (candidate_id)
             REFERENCES candidate(candidate_id)
+            ON DELETE CASCADE
 
         )
     """)
@@ -74,32 +84,33 @@ def create_database():
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS evaluation (
 
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
 
-            candidate_id INTEGER,
+            candidate_id INT,
 
-            communication REAL,
+            communication FLOAT,
 
-            technical REAL,
+            technical FLOAT,
 
-            problem_solving REAL,
+            problem_solving FLOAT,
 
-            confidence REAL,
+            confidence FLOAT,
 
-            overall_score REAL,
+            overall_score FLOAT,
 
             strengths TEXT,
 
             weaknesses TEXT,
 
-             improvement_recommendations TEXT,
-            
+            improvement_recommendations TEXT,
+
             summary TEXT,
 
-            final_recommendation TEXT,
+            final_recommendation VARCHAR(100),
 
-            FOREIGN KEY(candidate_id)
+            FOREIGN KEY (candidate_id)
             REFERENCES candidate(candidate_id)
+            ON DELETE CASCADE
 
         )
     """)
@@ -120,31 +131,34 @@ def save_candidate(
         employment_status,
         target_position
 ):
+
     conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
-                   INSERT INTO candidate
-                   (name,
-                    university,
-                    study_level,
-                    course,
-                    employment_status,
-                    target_position)
-                   VALUES (?, ?, ?, ?, ?, ?)
-                   """, (
-                       name,
-                       university,
-                       study_level,
-                       course,
-                       employment_status,
-                       target_position
-                   ))
+        INSERT INTO candidate
+        (
+            name,
+            university,
+            study_level,
+            course,
+            employment_status,
+            target_position
+        )
+        VALUES (%s, %s, %s, %s, %s, %s)
+        RETURNING candidate_id
+    """, (
+        name,
+        university,
+        study_level,
+        course,
+        employment_status,
+        target_position
+    ))
+
+    candidate_id = cursor.fetchone()[0]
 
     conn.commit()
-
-    candidate_id = cursor.lastrowid
-
     conn.close()
 
     return candidate_id
@@ -171,7 +185,7 @@ def save_interview(
             question,
             answer
         )
-        VALUES (?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s)
     """, (
         candidate_id,
         question_number,
@@ -218,7 +232,7 @@ def save_evaluation(
             summary,
             final_recommendation
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     """, (
         candidate_id,
         communication,
@@ -235,3 +249,17 @@ def save_evaluation(
 
     conn.commit()
     conn.close()
+
+# -------------------------------------------------
+# Test Connection
+# -------------------------------------------------
+
+if __name__ == "__main__":
+
+    print("1. Start")
+
+    create_database()
+
+    print("2. Database created")
+
+    print("✅ PostgreSQL connection successful.")

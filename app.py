@@ -501,7 +501,7 @@ elif st.session_state.started and not st.session_state.finished:
         col1, col2 = st.columns([1, 3], vertical_alignment="center")
 
         with col1:
-            st.image("images/Chatbot Chat Message_resize.png", width=60)
+            st.image("images/chatbot.png", width=60)
 
         with col2:
             st.markdown("""

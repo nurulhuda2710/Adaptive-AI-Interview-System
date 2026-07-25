@@ -1,7 +1,8 @@
 import base64
 import streamlit as st
-import sqlite3
 import pandas as pd
+
+from database import get_connection
 
 # ======================================================
 # PAGE CONFIG
@@ -13,15 +14,6 @@ st.set_page_config(
     layout="wide"
 )
 
-DATABASE = "interview.db"
-
-# ======================================================
-# DATABASE CONNECTION
-# ======================================================
-
-def get_connection():
-    return sqlite3.connect(DATABASE)
-
 # ======================================================
 # LOGIN SESSION
 # ======================================================
@@ -29,94 +21,98 @@ def get_connection():
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
-# ======================================================
-# LOAD BACKGROUND IMAGE
-# ======================================================
 
-def get_base64(file_path):
-    with open(file_path, "rb") as img:
-        return base64.b64encode(img.read()).decode()
-
-bg_image = get_base64("assets/4872300.jpg")
 
 # ======================================================
 # CUSTOM CSS
 # ======================================================
 
-st.markdown(f"""
+st.markdown("""
 <style>
 
-/* ---------- Background ---------- */
-
-.stApp {{
-    background:
-        linear-gradient(
-            rgba(0,0,0,0.45),
-            rgba(0,0,0,0.45)
-        ),
-        url("data:image/jpg;base64,{bg_image}");
-
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-}}
-
-/* Hide Streamlit Header */
-
-header {{
+header{
     visibility:hidden;
-}}
+}
 
-[data-testid="stToolbar"] {{
+[data-testid="stToolbar"]{
     display:none;
-}}
+}
 
-.block-container {{
-    padding-top:5rem;
-}}
+.stApp{
+    background:#F5F7FB;
+}
 
-/* ---------- Login Card ---------- */
+.block-container{
+    padding-top:2rem;
+    padding-left:3rem;
+    padding-right:3rem;
+}
 
-div[data-testid="stVerticalBlock"] > div:has(div[data-testid="stTextInput"]) {{
+/* Login Card */
+
+.login-card{
+
     background:white;
-    padding:35px;
+
+    padding:45px;
+
     border-radius:20px;
-    box-shadow:0px 10px 30px rgba(0,0,0,.35);
-    max-width:580px;      /* ubah ikut saiz yang awak nak */
-    margin:0 auto;
-}}
 
-/* ---------- Textbox ---------- */
+    box-shadow:0 10px 30px rgba(0,0,0,.15);
 
-.stTextInput input {{
-    border-radius:10px;
-}}
+}
 
-/* ---------- Button ---------- */
+/* Text */
 
-.stButton > button {{
+.title{
+
+    font-size:40px;
+
+    font-weight:700;
+
+    color:#2d3142;
+
+}
+
+.subtitle{
+
+    color:#666;
+
+    font-size:18px;
+
+    margin-bottom:25px;
+
+}
+
+/* Button */
+
+.stButton>button{
 
     width:100%;
+
     height:50px;
 
-    background:#6C63FF;
+    background:#5E35B1;
+
     color:white;
 
     border:none;
+
     border-radius:10px;
 
     font-size:18px;
-    font-weight:bold;
 
-}}
+    font-weight:600;
 
-.stButton > button:hover {{
+}
 
-    background:#564FD8;
+.stButton>button:hover{
+
+    background:#4527A0;
+
     color:white;
 
-}}
+}
 
 </style>
 """, unsafe_allow_html=True)
@@ -127,34 +123,94 @@ div[data-testid="stVerticalBlock"] > div:has(div[data-testid="stTextInput"]) {{
 
 if not st.session_state.logged_in:
 
-    left, center, right = st.columns([1.2,2,1.2])
+    left_space, logo_col, title_col, right_space = st.columns([00.34, 0.16, 0.52, 0.30], vertical_alignment="center")
 
-    with center:
+    with logo_col:
+        st.markdown(
+            """
+            <div style="display:flex; justify-content:center;">
+            """,
+            unsafe_allow_html=True,
+        )
 
-        st.markdown("<br><br>", unsafe_allow_html=True)
+        st.image("images/ai_hr.png", width=130)
 
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with title_col:
         st.markdown("""
-        <div style="text-align:center;">
-            <span style="font-size:38px;">💼</span>
-            <span style="
-                font-size:42px;
-                font-weight:700;
-                color:#2d3142;
-                vertical-align:middle;
-            ">
-                HR Login
-            </span>
-        </div>
+        <h1 style="
+        text-align:center;
+        font-size:46px;
+        font-weight:600;
+        color:#2d3142;
+        margin-bottom:8px;
+        ">
+        AI Recruitment System
+        </h1>
+
+        <p style="
+        text-align:center;
+        font-size:20px;
+        color:#777;
+        margin-bottom:30px;
+        ">
+        AI-powered recruitment platform for candidate interview assessment.
+        </p>
+        
+        <p style="
+        text-align:center;
+        font-size:17px;
+        color:#777;
+        font-weight:600;
+        ">
+        🧠 Adaptive AI &nbsp;&nbsp; 📊 Smart Evaluation &nbsp;&nbsp; 💼 HR Dashboard
+        </p>
         """, unsafe_allow_html=True)
 
+
+    st.divider()
+
+    # ======================================================
+    # LOGIN LAYOUT
+    # ======================================================
+
+    left, right = st.columns([1.3, 0.8])
+
+    # ---------------- LEFT ---------------- #
+
+    with left:
+
+        st.image(
+            "assets/4872300.jpg",
+            width="stretch"
+        )
+
+    # ---------------- RIGHT ---------------- #
+
+    with right:
+
         st.markdown(
-            "<p style='text-align:center;color:gray;'>"
-            "Please login to access the AI Recruitment Dashboard."
-            "</p>",
+            "<div style='margin-top:86px;'></div>",
             unsafe_allow_html=True
         )
 
-        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown("""
+
+        <h2 style="
+        color:#2d3142;
+        margin-bottom:8px;
+        font-size:42px;
+        font-weight:700;
+        ">
+        💼 HR Login
+        </h2>
+
+        <div class="subtitle">
+        Welcome back! Please sign in to access the HR Dashboard.
+        </div>
+
+        """, unsafe_allow_html=True)
 
         username = st.text_input(
             "Username",
@@ -170,8 +226,8 @@ if not st.session_state.logged_in:
         st.markdown("<br>", unsafe_allow_html=True)
 
         if st.button(
-            "Login",
-            use_container_width=True
+                "Login",
+                width="stretch"
         ):
 
             if username == "hr" and password == "admin123":
@@ -183,7 +239,10 @@ if not st.session_state.logged_in:
 
                 st.error("Invalid username or password.")
 
+        st.markdown("</div>", unsafe_allow_html=True)
+
     st.stop()
+
 
 # ======================================================
 # DASHBOARD CSS
@@ -261,6 +320,7 @@ st.sidebar.write(f"**Target Position:** {candidate['target_position']}")
 # CANDIDATE INFORMATION
 # ======================================================
 
+st.markdown("<div style='margin-top:35px;'></div>", unsafe_allow_html=True)
 st.header("👤 Candidate Information")
 
 col1, col2 = st.columns(2)
