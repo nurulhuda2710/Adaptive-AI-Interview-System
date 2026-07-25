@@ -1,4 +1,4 @@
-import psycopg2
+import psycopg
 
 from config import (
     PGHOST,
@@ -10,7 +10,7 @@ from config import (
 
 def get_connection():
 
-    conn = psycopg2.connect(
+    conn = psycopg.connect(
         host=PGHOST,
         port=PGPORT,
         dbname=PGDATABASE,
