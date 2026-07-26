@@ -547,24 +547,28 @@ elif st.session_state.started and not st.session_state.finished:
 # Chat History
 # -------------------------------------------------
 
-    for item in st.session_state.interview_history:
-
+    for i, item in enumerate(st.session_state.interview_history, start=1):
         with st.chat_message("assistant", avatar="🤖"):
-            st.markdown(item["question"])
+            st.markdown(
+                f"**Q {i}/{TOTAL_QUESTIONS}:** {item['question']}"
+            )
 
         with st.container():
             col1, col2 = st.columns([2, 8])
 
-        with col2:
-            with st.chat_message("user", avatar="👤"):
-                st.markdown(item["answer"])
+            with col2:
+                with st.chat_message("user", avatar="👤"):
+                    st.markdown(item["answer"])
 
 # -------------------------------------------------
 # Current Question
 # -------------------------------------------------
 
     with st.chat_message("assistant", avatar="🤖"):
-        st.markdown(st.session_state.current_question_text)
+        st.markdown(
+            f"**Q {st.session_state.current_question}/{TOTAL_QUESTIONS}:** "
+            f"{st.session_state.current_question_text}"
+        )
 
 # -------------------------------------------------
 # User Input
