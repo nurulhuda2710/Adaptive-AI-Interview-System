@@ -552,8 +552,12 @@ elif st.session_state.started and not st.session_state.finished:
         with st.chat_message("assistant", avatar="🤖"):
             st.markdown(item["question"])
 
-        with st.chat_message("user", avatar="👤"):
-            st.markdown(item["answer"])
+        with st.container():
+            col1, col2 = st.columns([2, 8])
+
+        with col2:
+            with st.chat_message("user", avatar="👤"):
+                st.markdown(item["answer"])
 
 # -------------------------------------------------
 # Current Question
