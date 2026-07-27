@@ -103,6 +103,8 @@ header{
     font-size:18px;
 
     font-weight:600;
+    
+    box-shadow:0 4px 12px rgba(94,53,177,.25);
 
 }
 
@@ -114,66 +116,26 @@ header{
 
 }
 
+.stTextInput input{
+
+    border-radius:10px !important;
+
+    border:1px solid #D6D6D6 !important;
+
+    padding:10px;
+
+}
+
 </style>
 """, unsafe_allow_html=True)
+
+st.divider()
 
 # ======================================================
 # LOGIN PAGE
 # ======================================================
 
 if not st.session_state.logged_in:
-
-    left_space, logo_col, title_col, right_space = st.columns([00.34, 0.16, 0.52, 0.30], vertical_alignment="center")
-
-    with logo_col:
-        st.markdown(
-            """
-            <div style="display:flex; justify-content:center;">
-            """,
-            unsafe_allow_html=True,
-        )
-
-        st.image("images/ai_hr.png", width=130)
-
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    with title_col:
-        st.markdown("""
-        <h1 style="
-        text-align:center;
-        font-size:46px;
-        font-weight:600;
-        color:#2d3142;
-        margin-bottom:8px;
-        ">
-        AI Recruitment System
-        </h1>
-
-        <p style="
-        text-align:center;
-        font-size:20px;
-        color:#777;
-        margin-bottom:30px;
-        ">
-        AI-powered recruitment platform for candidate interview assessment.
-        </p>
-        
-        <p style="
-        text-align:center;
-        font-size:17px;
-        color:#777;
-        font-weight:600;
-        ">
-        🧠 Adaptive AI &nbsp;&nbsp; 📊 Smart Evaluation &nbsp;&nbsp; 💼 HR Dashboard
-        </p>
-        """, unsafe_allow_html=True)
-
-
-    st.divider()
-
-    # ======================================================
-    # LOGIN LAYOUT
-    # ======================================================
 
     left, right = st.columns([1.3, 0.8])
 
@@ -183,25 +145,68 @@ if not st.session_state.logged_in:
 
         st.image(
             "assets/4872300.jpg",
-            width="stretch"
+            use_container_width=True
+            # width=2500
         )
 
     # ---------------- RIGHT ---------------- #
 
     with right:
 
-        st.markdown(
-            "<div style='margin-top:86px;'></div>",
-            unsafe_allow_html=True
-        )
+        # Space from top
+        # st.markdown("<br><br><br>", unsafe_allow_html=True)
+
+        # ======================================================
+        # HEADER
+        # ======================================================
+
+        logo_col1, logo_col2, logo_col3 = st.columns([1, 1, 1])
+
+        with logo_col2:
+            st.markdown(
+                "<div style='margin-top:-60px;'>",
+                unsafe_allow_html=True
+            )
+
+            st.markdown(
+                "</div>",
+                unsafe_allow_html=True
+            )
 
         st.markdown("""
+        <h1 style="
+        text-align:left;
+        font-size:38px;
+        font-weight:700;
+        color:#2d3142;
+        margin-bottom:3px;
+        ">
+        📊 Adaptive AI Recruitment System
+        </h1>
 
+        <p style="
+        text-align:left;
+        font-size:17px;
+        color:#777;
+        margin-bottom:10px;
+        ">
+         An AI-powered interview platform that supports adaptive questioning, candidate evaluation, 
+         automated feedback, and HR decision-making.
+        </p>
+        """, unsafe_allow_html=True)
+
+        st.divider()
+
+        # ======================================================
+        # HR LOGIN
+        # ======================================================
+
+        st.markdown("""
         <h2 style="
         color:#2d3142;
-        margin-bottom:8px;
-        font-size:42px;
-        font-weight:700;
+        margin-bottom:6px;
+        font-size:28px;
+        font-weight:600;
         ">
         💼 HR Login
         </h2>
@@ -209,25 +214,33 @@ if not st.session_state.logged_in:
         <div class="subtitle">
         Welcome back! Please sign in to access the HR Dashboard.
         </div>
-
         """, unsafe_allow_html=True)
 
+        # Username
+        st.markdown('Username <span style="color:red">*</span>', unsafe_allow_html=True)
+
         username = st.text_input(
-            "Username",
-            placeholder="Enter username"
+            "",
+            placeholder="Enter username",
+            label_visibility="collapsed"
         )
 
+        # Password
+        st.markdown('Password <span style="color:red">*</span>', unsafe_allow_html=True)
+
         password = st.text_input(
-            "Password",
+            "",
             type="password",
-            placeholder="Enter password"
+            placeholder="Enter password",
+            label_visibility="collapsed"
         )
 
         st.markdown("<br>", unsafe_allow_html=True)
 
+        # Login Button
         if st.button(
                 "Login",
-                width="stretch"
+                use_container_width=True
         ):
 
             if username == "hr" and password == "admin123":
@@ -237,7 +250,7 @@ if not st.session_state.logged_in:
 
             else:
 
-                st.error("Invalid username or password.")
+                st.error("❌ Invalid username or password.")
 
         st.markdown("</div>", unsafe_allow_html=True)
 
@@ -302,7 +315,35 @@ candidate = candidate_df[
 
 candidate_id = candidate["candidate_id"]
 
+# ======================================================
+# LOAD FEEDBACK
+# ======================================================
 
+feedback = pd.read_sql_query(
+    f"""
+    SELECT *
+    FROM feedback
+    WHERE candidate_id = {candidate_id}
+    """,
+    conn
+)
+
+feedback_all = pd.read_sql_query(
+    """
+    SELECT
+        AVG(question_relevance_1) AS q1,
+        AVG(question_relevance_2) AS q2,
+        AVG(assessment_quality_1) AS q3,
+        AVG(assessment_quality_2) AS q4,
+        AVG(user_experience_1) AS q5,
+        AVG(user_experience_2) AS q6,
+        AVG(user_experience_3) AS q7,
+        AVG(user_experience_4) AS q8,
+        COUNT(*) AS total_feedback
+    FROM feedback
+    """,
+    conn
+)
 # ======================================================
 # SIDEBAR - QUICK INFO
 # ======================================================
@@ -439,7 +480,7 @@ else:
     st.sidebar.divider()
 
     if st.sidebar.button(
-        "🚪 Logout",
+        "⏻ Logout",
         use_container_width=True
     ):
 
@@ -547,6 +588,110 @@ else:
         st.error(
             f"🔴 Final Recommendation: {recommendation}"
         )
+
+    st.divider()
+
+    # ======================================================
+    # CANDIDATE FEEDBACK
+    # ======================================================
+
+
+    st.header("⭐ Candidate Feedback")
+
+    if feedback.empty:
+
+        st.info("No feedback submitted.")
+
+    else:
+
+        fb = feedback.iloc[0]
+
+        feedback_df = pd.DataFrame({
+
+            "Category": [
+                "Relevance of Interview Questions",
+                "Relevance of Adaptive Follow-up Questions",
+                "Accuracy of AI Assessment",
+                "Usefulness of AI Feedback",
+                "Ease of Use",
+                "User Engagement",
+                "Intention to Reuse the System",
+                "Overall User Satisfaction"
+            ],
+
+            "Rating": [
+                fb["question_relevance_1"],
+                fb["question_relevance_2"],
+                fb["assessment_quality_1"],
+                fb["assessment_quality_2"],
+                fb["user_experience_1"],
+                fb["user_experience_2"],
+                fb["user_experience_3"],
+                fb["user_experience_4"]
+            ]
+
+        })
+
+        st.dataframe(
+            feedback_df,
+            hide_index=True,
+            use_container_width=True
+        )
+
+        st.subheader("💬 Additional Comments")
+
+        if fb["comments"]:
+            st.info(fb["comments"])
+
+    st.divider()
+
+    st.header("📊 Average User Feedback Ratings")
+
+    avg = feedback_all.iloc[0]
+
+    st.caption(
+        f"Based on {int(avg['total_feedback'])} participant(s)."
+    )
+
+    chart_df = pd.DataFrame({
+
+        "Category": [
+            "Interview Questions",
+            "Adaptive Follow-up",
+            "AI Assessment",
+            "AI Feedback",
+            "Ease of Use",
+            "User Engagement",
+            "Reuse Intention",
+            "Overall Satisfaction"
+        ],
+
+        "Average Rating": [
+            avg["q1"],
+            avg["q2"],
+            avg["q3"],
+            avg["q4"],
+            avg["q5"],
+            avg["q6"],
+            avg["q7"],
+            avg["q8"]
+        ]
+
+    })
+
+    st.bar_chart(
+        chart_df.set_index("Category")
+    )
+
+    overall_average = round(
+        chart_df["Average Rating"].mean(),
+        2
+    )
+
+    st.metric(
+        "Overall Average Rating",
+        f"{overall_average} / 5"
+    )
 
 # ======================================================
 # CLOSE DATABASE

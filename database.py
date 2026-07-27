@@ -115,9 +115,46 @@ def create_database():
         )
     """)
 
+    # -------------------------------------------------
+    # Feedback Table
+    # -------------------------------------------------
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS feedback (
+
+            id SERIAL PRIMARY KEY,
+
+            candidate_id INT,
+
+            question_relevance_1 INT,
+
+            question_relevance_2 INT,
+
+            assessment_quality_1 INT,
+
+            assessment_quality_2 INT,
+
+            user_experience_1 INT,
+
+            user_experience_2 INT,
+
+            user_experience_3 INT,
+
+            user_experience_4 INT,
+
+            comments TEXT,
+
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+            FOREIGN KEY (candidate_id)
+            REFERENCES candidate(candidate_id)
+            ON DELETE CASCADE
+
+        )
+    """)
+
     conn.commit()
     conn.close()
-
 
 # -------------------------------------------------
 # Save Candidate Information
@@ -251,6 +288,60 @@ def save_evaluation(
     conn.close()
 
 # -------------------------------------------------
+# Save Feedback
+# -------------------------------------------------
+
+def save_feedback(
+    candidate_id,
+    q1,
+    q2,
+    q3,
+    q4,
+    q5,
+    q6,
+    q7,
+    q8,
+    comments
+):
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        INSERT INTO feedback
+        (
+            candidate_id,
+            question_relevance_1,
+            question_relevance_2,
+            assessment_quality_1,
+            assessment_quality_2,
+            user_experience_1,
+            user_experience_2,
+            user_experience_3,
+            user_experience_4,
+            comments
+        )
+        VALUES
+        (
+            %s,%s,%s,%s,%s,%s,%s,%s,%s,%s
+        )
+    """,(
+        candidate_id,
+        q1,
+        q2,
+        q3,
+        q4,
+        q5,
+        q6,
+        q7,
+        q8,
+        comments
+    ))
+
+    conn.commit()
+    conn.close()
+
+# -------------------------------------------------
 # Test Connection
 # -------------------------------------------------
 
@@ -259,6 +350,19 @@ if __name__ == "__main__":
     print("1. Start")
 
     create_database()
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT table_name
+        FROM information_schema.tables
+        WHERE table_schema = 'public';
+    """)
+
+    print(cursor.fetchall())
+
+    conn.close()
 
     print("2. Database created")
 
